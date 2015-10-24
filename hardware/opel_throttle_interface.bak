@@ -1,0 +1,175 @@
+EESchema Schematic File Version 2
+LIBS:power
+LIBS:device
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:opto
+LIBS:atmel
+LIBS:contrib
+LIBS:valves
+LIBS:MITEVT_ANALOG
+LIBS:MITEVT_CONTACTORS
+LIBS:MITEVT_interface
+LIBS:MITEVT_mcontrollers
+LIBS:MITEVT_OPTO
+LIBS:MITEVT_power
+LIBS:MITEVT_REG
+LIBS:opel_throttle_interface-cache
+EELAYER 25 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 5
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Sheet
+S 4850 2550 1300 1000
+U 55FD8AB1
+F0 "Micro Controller" 60
+F1 "mcu.sch" 60
+F2 "CAN1L" B R 6150 2700 60 
+F3 "CAN1H" B R 6150 2800 60 
+F4 "RXD" I L 4850 2700 60 
+F5 "TXD" O L 4850 2800 60 
+F6 "MCU_RESET_N" I L 4850 2900 60 
+F7 "MCU_PROG_N" I L 4850 3000 60 
+F8 "CAN1P" I R 6150 3350 60 
+F9 "THROTTLE1" I L 4850 3150 60 
+F10 "THROTTLE2" I L 4850 3250 60 
+F11 "BRAKE1" I L 4850 3350 60 
+F12 "BRAKE2" I L 4850 3450 60 
+$EndSheet
+$Sheet
+S 4450 1150 1100 1000
+U 55FDA43C
+F0 "Power Supplies" 60
+F1 "power.sch" 60
+F2 "+12V" I L 4450 1550 60 
+F3 "+3V3" O R 5550 1550 60 
+F4 "+5V" O R 5550 1850 60 
+$EndSheet
+$Comp
+L +3.3V #PWR01
+U 1 1 55FDBCE4
+P 5850 1350
+F 0 "#PWR01" H 5850 1200 50  0001 C CNN
+F 1 "+3.3V" H 5850 1490 50  0000 C CNN
+F 2 "" H 5850 1350 60  0000 C CNN
+F 3 "" H 5850 1350 60  0000 C CNN
+	1    5850 1350
+	1    0    0    -1  
+$EndComp
+$Sheet
+S 6750 2550 850  1000
+U 55FDCA7F
+F0 "Output Connectors" 60
+F1 "outConnectors.sch" 60
+F2 "CAN1H" B L 6750 2800 60 
+F3 "CAN1L" B L 6750 2700 60 
+F4 "CAN1P" O L 6750 3350 60 
+$EndSheet
+Wire Wire Line
+	4450 1550 4100 1550
+Wire Wire Line
+	4100 2600 3500 2600
+Wire Wire Line
+	5550 1550 5850 1550
+Wire Wire Line
+	5850 1550 5850 1350
+Wire Wire Line
+	3500 2700 4850 2700
+Wire Wire Line
+	3500 2800 4850 2800
+Wire Wire Line
+	3500 2900 4850 2900
+Wire Wire Line
+	3500 3000 4850 3000
+Wire Wire Line
+	6750 2800 6150 2800
+Wire Wire Line
+	6150 2700 6750 2700
+Wire Wire Line
+	6150 3350 6750 3350
+Wire Wire Line
+	4100 1400 4100 1550
+Wire Wire Line
+	4100 1550 4100 2600
+$Comp
+L +12V #PWR?
+U 1 1 562C1A54
+P 4100 1400
+F 0 "#PWR?" H 4100 1250 50  0001 C CNN
+F 1 "+12V" H 4100 1540 50  0000 C CNN
+F 2 "" H 4100 1400 60  0000 C CNN
+F 3 "" H 4100 1400 60  0000 C CNN
+	1    4100 1400
+	1    0    0    -1  
+$EndComp
+Connection ~ 4100 1550
+$Comp
+L +5V #PWR?
+U 1 1 562C508C
+P 6150 1350
+F 0 "#PWR?" H 6150 1200 50  0001 C CNN
+F 1 "+5V" H 6150 1490 50  0000 C CNN
+F 2 "" H 6150 1350 60  0000 C CNN
+F 3 "" H 6150 1350 60  0000 C CNN
+	1    6150 1350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5550 1850 6150 1850
+Wire Wire Line
+	6150 1850 6150 1350
+$Sheet
+S 2700 2500 800  1000
+U 55FDAA39
+F0 "Input Connectors" 60
+F1 "inputConnectors.sch" 60
+F2 "+12V" O R 3500 2600 60 
+F3 "RXD" O R 3500 2700 60 
+F4 "TXD" I R 3500 2800 60 
+F5 "MCU_RESET_N" O R 3500 2900 60 
+F6 "MCU_PROG_N" O R 3500 3000 60 
+F7 "THROTTLE1" O R 3500 3150 60 
+F8 "THROTTLE2" O R 3500 3250 60 
+F9 "BRAKE1" O R 3500 3350 60 
+F10 "BRAKE2" O R 3500 3450 60 
+$EndSheet
+Wire Wire Line
+	3500 3150 4850 3150
+Wire Wire Line
+	4850 3250 3500 3250
+Wire Wire Line
+	3500 3350 4850 3350
+Wire Wire Line
+	3500 3450 4850 3450
+$EndSCHEMATC
