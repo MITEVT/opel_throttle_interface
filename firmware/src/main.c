@@ -1,8 +1,6 @@
 
 
-#include "chip.h"
-#include "util.h"
-#include <string.h>
+#include "board.h"
 
 /*****************************************************************************
  * Private types/enumerations/variables
@@ -19,7 +17,7 @@
 //const uint32_t OscRateIn = 12000000;
 
 
-volatile uint32_t msTicks;
+// extern volatile uint32_t msTicks;
 
 uint16_t tx_buffer_str[16];
 
@@ -47,7 +45,7 @@ static char uart_rx_buf[UART_RX_BUFFER_SIZE];
  ****************************************************************************/
 
 
-
+/*
 void baudrateCalculate(uint32_t baud_rate, uint32_t *can_api_timing_cfg)
 {
 	uint32_t pClk, div, quanta, segs, seg1, seg2, clk_per_bit, can_sjw;
@@ -73,6 +71,7 @@ void baudrateCalculate(uint32_t baud_rate, uint32_t *can_api_timing_cfg)
 		}
 	}
 }
+*/
 
 /*	CAN receive callback */
 /*	Function is executed by the Callback handler after
@@ -132,7 +131,10 @@ static ADC_CLOCK_SETUP_T adc_setup;
 
 int main(void)
 {
-
+	if (Board_SysTick_Init()) {
+		while(1);
+	}
+	/*
 	SystemCoreClockUpdate();
 
 	if (SysTick_Config (SystemCoreClock / 1000)) {
@@ -140,26 +142,38 @@ int main(void)
 		while(1);
 	}
 	
+	Board_LED_Init();
+	*/
+	/*
 	GPIO_Config();
 	LED_Config();
+	*/
 
+	Board_ADC_Init();
+	/*
 	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_11, FUNC2);
 
-        Chip_ADC_Init(LPC_ADC, &adc_setup);
-        Chip_ADC_EnableChannel(LPC_ADC, ADC_CH0, ENABLE);
+    Chip_ADC_Init(LPC_ADC, &adc_setup);
+    Chip_ADC_EnableChannel(LPC_ADC, ADC_CH0, ENABLE);
+    */
 
-        uint16_t adc_data = 0;
+    uint16_t tps_1_data = 0;
+    uint16_t tps_2_data = 0;
+    uint16_t tps_data = 0;
 
 	//---------------
 	//UART
-	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_6, (IOCON_FUNC1 | IOCON_MODE_INACT));/* RXD */
-	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_7, (IOCON_FUNC1 | IOCON_MODE_INACT));/* TXD */
+    Board_UART_Init(9600);
+    /*
+	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_6, (IOCON_FUNC1 | IOCON_MODE_INACT)); // RXD 
+	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_7, (IOCON_FUNC1 | IOCON_MODE_INACT)); // TXD 
 
 	Chip_UART_Init(LPC_USART);
 	Chip_UART_SetBaud(LPC_USART, 9600);
 	Chip_UART_ConfigData(LPC_USART, (UART_LCR_WLEN8 | UART_LCR_SBS_1BIT | UART_LCR_PARITY_DIS));
 	Chip_UART_SetupFIFOS(LPC_USART, (UART_FCR_FIFO_EN | UART_FCR_TRG_LEV2));
 	Chip_UART_TXEnable(LPC_USART);
+	*/
 	//---------------
 
 	DEBUG_Print("Started up\n\r");
@@ -172,8 +186,10 @@ int main(void)
 
 	//---------------
 
+	Board_CAN_Init(TEST_CCAN_BAUD_RATE, CAN_rx, CAN_tx, CAN_error);
+	/*
 	uint32_t CanApiClkInitTable[2];
-	/* Publish CAN Callback Functions */
+	// Publish CAN Callback Functions //
 	CCAN_CALLBACKS_T callbacks = {
 		CAN_rx,
 		CAN_tx,
@@ -184,13 +200,14 @@ int main(void)
 		NULL,
 		NULL,
 	};
-	baudrateCalculate(TEST_CCAN_BAUD_RATE, CanApiClkInitTable);
+	CAN_baudrateCalculate(TEST_CCAN_BAUD_RATE, CanApiClkInitTable);
 
 	LPC_CCAN_API->init_can(&CanApiClkInitTable[0], TRUE);
-	/* Configure the CAN callback functions */
+	// Configure the CAN callback functions //
 	LPC_CCAN_API->config_calb(&callbacks);
-	/* Enable the CAN Interrupt */
+	// Enable the CAN Interrupt //
 	NVIC_EnableIRQ(CAN_IRQn);
+	*/
 
 	// typedef struct CCAN_MSG_OBJ {
 	// 	uint32_t  mode_id;
@@ -224,16 +241,25 @@ int main(void)
 
 	while (1) {
 
-		/* Start A/D conversion */
+		Board_TPS_1_ADC_Read(&tps_1_data); // 0-5V mapped to approx. 0-920
+		Board_TPS_1_ADC_Read(&tps_2_data);
+
+		tps_data = (tps_1_data+tps_2_data)/2; // estimate of actual reading
+		tps_error = (tps_1_data-tps_2_data); // if greater than 92, set error flag
+
+		bool tps_bad_reading = abs(tps_error) > 92;
+		/*
+		// Start A/D conversion 
         Chip_ADC_SetStartMode(LPC_ADC, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
 
-        /* Waiting for A/D conversion complete */
+        // Waiting for A/D conversion complete 
         while (!Chip_ADC_ReadStatus(LPC_ADC, ADC_CH0, ADC_DR_DONE_STAT)) {}
-        /* Read ADC value */
-        Chip_ADC_ReadValue(LPC_ADC, ADC_CH0, &adc_data);
-		itoa(adc_data,tx_buffer_str,10);
+        // Read ADC value 
+        Chip_ADC_ReadValue(LPC_ADC, ADC_CH0, &tps_1_data);
+    	*/
+		itoa(tps_data,tx_buffer_str,10);
 
-                if (adc_data > 0x0200) {
+                if (tps_data > 0x0200 && !tps_bad_reading) {
                         LED_On();
                 } else {
                         LED_Off();
@@ -273,9 +299,13 @@ int main(void)
 					msg_obj.msgobj = 2;
 					msg_obj.mode_id = 0x301;
 					msg_obj.dlc = 4;
-					msg_obj.data[0] = (uint8_t) (adc_data & 0x00FF);
-					msg_obj.data[1] = (uint8_t) ((adc_data)>>8);
+					msg_obj.data[0] = (uint8_t) (tps_data & 0x00FF);
+					msg_obj.data[1] = (uint8_t) ((tps_data)>>8);
+					msg_obj.data[2] = (uint8_t) ((tps_bad_reading) ? 1 : 0);
 					LPC_CCAN_API->can_transmit(&msg_obj);
+					Board_UART_PrintNum(msg_obj.data[0], 10, true);
+					Board_UART_PrintNum(msg_obj.data[1], 10, true);
+					Board_UART_PrintNum(msg_obj.data[2], 10, true);
 					break;
 				default:
 					DEBUG_Print("Invalid Command\r\n");

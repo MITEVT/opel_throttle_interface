@@ -14,7 +14,6 @@ volatile uint32_t msTicks; 						// Running count of milliseconds since start
 // -------------------------------------------------------------
 // Configuration Macros
 
-#define CAN_LOOP_BACK
 
 // -------------------------------------------------------------
 // Pin Descriptions
@@ -41,6 +40,9 @@ volatile uint32_t msTicks; 						// Running count of milliseconds since start
 
 #define UART_RX UART_RX_PORT, UART_RX_PIN
 #define UART_TX UART_TX_PORT, UART_TX_PIN
+
+#define Board_LED_On(led) Chip_GPIO_SetPinState(LPC_GPIO, led, true)
+#define Board_LED_Off(led) Chip_GPIO_SetPinState(LPC_GPIO, led, false)
  
 // -------------------------------------------------------------
 // Board Level Function Prototypes

@@ -73,6 +73,32 @@ int8_t Board_UART_Read(void *data, uint8_t num_bytes) {
 	return Chip_UART_Read(LPC_USART, data, num_bytes);
 }
 
+void CAN_baudrate_calculate(uint32_t baud_rate, uint32_t *can_api_timing_cfg)
+{
+	uint32_t pClk, div, quanta, segs, seg1, seg2, clk_per_bit, can_sjw;
+	Chip_Clock_EnablePeriphClock(SYSCTL_CLOCK_CAN);
+	pClk = Chip_Clock_GetMainClockRate();
+
+	clk_per_bit = pClk / baud_rate;
+
+	for (div = 0; div <= 15; div++) {
+		for (quanta = 1; quanta <= 32; quanta++) {
+			for (segs = 3; segs <= 17; segs++) {
+				if (clk_per_bit == (segs * quanta * (div + 1))) {
+					segs -= 3;
+					seg1 = segs / 2;
+					seg2 = segs - seg1;
+					can_sjw = seg1 > 3 ? 3 : seg1;
+					can_api_timing_cfg[0] = div;
+					can_api_timing_cfg[1] =
+						((quanta - 1) & 0x3F) | (can_sjw & 0x03) << 6 | (seg1 & 0x0F) << 8 | (seg2 & 0x07) << 12;
+					return;
+				}
+			}
+		}
+	}
+}
+
 void Board_CAN_Init(uint32_t baudrate, void (*rx_callback)(uint8_t), void (*tx_callback)(uint8_t), void (*error_callback)(uint32_t)) {
 
 	uint32_t can_api_timing_cfg[2];
@@ -88,39 +114,47 @@ void Board_CAN_Init(uint32_t baudrate, void (*rx_callback)(uint8_t), void (*tx_c
 		NULL,
 	};
 
-	uint32_t pClk, div, quanta, segs, seg1, seg2, clk_per_bit, can_sjw;
-	Chip_Clock_EnablePeriphClock(SYSCTL_CLOCK_CAN);
-	pClk = Chip_Clock_GetMainClockRate();
-
-	clk_per_bit = pClk / baudrate;
-
-	for (div = 0; div <= 15; div++) {
-		for (quanta = 1; quanta <= 32; quanta++) {
-			for (segs = 3; segs <= 17; segs++) {
-				if (clk_per_bit == (segs * quanta * (div + 1))) {
-					segs -= 3;
-					seg1 = segs / 2;
-					seg2 = segs - seg1;
-					can_sjw = seg1 > 3 ? 3 : seg1;
-					can_api_timing_cfg[0] = div;
-					can_api_timing_cfg[1] =
-						((quanta - 1) & 0x3F) | (can_sjw & 0x03) << 6 | (seg1 & 0x0F) << 8 | (seg2 & 0x07) << 12;
-					break;
-				}
-			}
-		}
-	}
+	CAN_baudrate_calculate(baudrate, can_api_timing_cfg);
 
 	/* Initialize the CAN controller */
 	LPC_CCAN_API->init_can(&can_api_timing_cfg[0], TRUE);
 	/* Configure the CAN callback functions */
 	LPC_CCAN_API->config_calb(&callbacks);
 
-#ifdef CAN_LOOP_BACK
-	LPC_CCAN->CANCTRL |= (1 << 7); //Enable TEST Register
-	LPC_CCAN->CANTEST |= (1 << 3) | (1 << 4); // BASIC, SILENT, LOOPBACK
-#endif
-
 	/* Enable the CAN Interrupt */
 	NVIC_EnableIRQ(CAN_IRQn);
+}
+
+static ADC_CLOCK_SETUP_T adc_setup;
+
+void Board_ADC_Init() {
+	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_11, FUNC2);
+
+    Chip_ADC_Init(LPC_ADC, &adc_setup);
+    Chip_ADC_EnableChannel(LPC_ADC, ADC_CH0, ENABLE);
+
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_0, FUNC2);
+
+    Chip_ADC_Init(LPC_ADC, &adc_setup);
+    Chip_ADC_EnableChannel(LPC_ADC, ADC_CH1, ENABLE);
+}
+
+uint16_t Board_TPS_1_ADC_Read(uint16_t *adc_data) {
+	/* Start A/D conversion */
+    Chip_ADC_SetStartMode(LPC_ADC, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
+
+    /* Waiting for A/D conversion complete */
+    while (!Chip_ADC_ReadStatus(LPC_ADC, ADC_CH0, ADC_DR_DONE_STAT)) {}
+    /* Read ADC value */
+    Chip_ADC_ReadValue(LPC_ADC, ADC_CH0, adc_data);
+}
+
+uint16_t Board_TPS_2_ADC_Read(uint16_t *adc_data) {
+	/* Start A/D conversion */
+    Chip_ADC_SetStartMode(LPC_ADC, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
+
+    /* Waiting for A/D conversion complete */
+    while (!Chip_ADC_ReadStatus(LPC_ADC, ADC_CH1, ADC_DR_DONE_STAT)) {}
+    /* Read ADC value */
+    Chip_ADC_ReadValue(LPC_ADC, ADC_CH1, adc_data);
 }
