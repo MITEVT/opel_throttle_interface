@@ -104,5 +104,10 @@ int8_t Board_UART_Read(void *data, uint8_t num_bytes);
 
 void Board_CAN_Init(uint32_t baudrate, void (*rx_callback)(uint8_t), void (*tx_callback)(uint8_t), void (*error_callback)(uint32_t));
 
+void Board_ADC_Init();
+
+uint16_t Board_TPS_1_ADC_Read(uint16_t *adc_data);
+
+uint16_t Board_TPS_2_ADC_Read(uint16_t *adc_data);
 
 #endif

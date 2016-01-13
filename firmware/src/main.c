@@ -127,7 +127,7 @@ __INLINE static void LED_Off(void) {
         Chip_GPIO_SetPinState(LPC_GPIO, LED_PORT, LED_PIN, false);
 }
 
-static ADC_CLOCK_SETUP_T adc_setup;
+//static ADC_CLOCK_SETUP_T adc_setup;
 
 int main(void)
 {
@@ -149,7 +149,15 @@ int main(void)
 	LED_Config();
 	*/
 
+	Board_LEDs_Init();
 	Board_ADC_Init();
+
+	//GPIO_Config();
+	//LED_Config();
+	//Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_11, FUNC2);
+	//Chip_ADC_Init(LPC_ADC, &adc_setup);
+	//Chip_ADC_EnableChannel(LPC_ADC, ADC_CH0, ENABLE);
+	//Chip_ADC_EnableChannel(LPC_ADC, ADC_CH1, ENABLE);
 	/*
 	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_11, FUNC2);
 
@@ -159,6 +167,7 @@ int main(void)
 
     uint16_t tps_1_data = 0;
     uint16_t tps_2_data = 0;
+    uint16_t tps_error = 0;
     uint16_t tps_data = 0;
 
 	//---------------
@@ -242,7 +251,9 @@ int main(void)
 	while (1) {
 
 		Board_TPS_1_ADC_Read(&tps_1_data); // 0-5V mapped to approx. 0-920
-		Board_TPS_1_ADC_Read(&tps_2_data);
+		//Board_TPS_2_ADC_Read(&tps_2_data);
+		/* Start A/D conversion */
+		
 
 		tps_data = (tps_1_data+tps_2_data)/2; // estimate of actual reading
 		tps_error = (tps_1_data-tps_2_data); // if greater than 92, set error flag
@@ -259,13 +270,13 @@ int main(void)
     	*/
 		itoa(tps_data,tx_buffer_str,10);
 
-                if (tps_data > 0x0200 && !tps_bad_reading) {
+                if (tps_1_data > 0x0200) {
                         LED_On();
                 } else {
                         LED_Off();
                 }
-		//DEBUG_Print(tx_buffer_str);
-		//DEBUG_Print("\r\n");
+		DEBUG_Print(tx_buffer_str);
+		DEBUG_Print("\r\n");
 
 		if (!RingBuffer_IsEmpty(&rx_buffer)) {
 			CCAN_MSG_OBJ_T temp_msg;
