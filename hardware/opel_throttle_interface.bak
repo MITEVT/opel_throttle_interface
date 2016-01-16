@@ -35,12 +35,12 @@ LIBS:MITEVT_mcontrollers
 LIBS:MITEVT_OPTO
 LIBS:MITEVT_power
 LIBS:MITEVT_REG
-LIBS:final_outline-cache
+LIBS:opel_throttle_interface-cache
 EELAYER 25 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 1 5
+Sheet 1 6
 Title ""
 Date ""
 Rev ""
@@ -252,4 +252,10 @@ Wire Wire Line
 	6450 2400 6450 2550
 Wire Wire Line
 	6450 2550 6050 2550
+$Sheet
+S 7050 5200 600  550 
+U 569A9132
+F0 "TPS Level Converter" 60
+F1 "tps_level_converter.sch" 60
+$EndSheet
 $EndSCHEMATC

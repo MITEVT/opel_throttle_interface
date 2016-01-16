@@ -35,12 +35,12 @@ LIBS:MITEVT_mcontrollers
 LIBS:MITEVT_OPTO
 LIBS:MITEVT_power
 LIBS:MITEVT_REG
-LIBS:final_outline-cache
+LIBS:opel_throttle_interface-cache
 EELAYER 25 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 1 5
+Sheet 1 6
 Title ""
 Date ""
 Rev ""
@@ -77,6 +77,8 @@ F11 "LED4" O R 3600 4000 60
 F12 "LED5" O R 3600 4100 60 
 F13 "LED6" O R 3600 4200 60 
 F14 "LED7" O R 3600 4300 60 
+F15 "TPS1_5V" O L 2300 4100 60 
+F16 "TPS2_5V" O L 2300 3400 60 
 $EndSheet
 $Sheet
 S 4500 4450 1750 1550
@@ -252,4 +254,32 @@ Wire Wire Line
 	6450 2400 6450 2550
 Wire Wire Line
 	6450 2550 6050 2550
+$Sheet
+S 7050 5200 600  550 
+U 569A9132
+F0 "TPS Level Converter" 60
+F1 "tps_level_converter.sch" 60
+F2 "TPS1_5V" I L 7050 5350 60 
+F3 "TPS2_5V" I L 7050 5550 60 
+$EndSheet
+Wire Wire Line
+	7050 5550 6650 5550
+Wire Wire Line
+	6650 5550 6650 6450
+Wire Wire Line
+	6650 6450 2000 6450
+Wire Wire Line
+	2000 6450 2000 3400
+Wire Wire Line
+	2000 3400 2300 3400
+Wire Wire Line
+	2050 4100 2300 4100
+Wire Wire Line
+	2050 4100 2050 6350
+Wire Wire Line
+	2050 6350 6600 6350
+Wire Wire Line
+	6600 6350 6600 5350
+Wire Wire Line
+	6600 5350 7050 5350
 $EndSCHEMATC

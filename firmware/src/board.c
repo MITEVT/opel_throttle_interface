@@ -128,8 +128,8 @@ void Board_CAN_Init(uint32_t baudrate, void (*rx_callback)(uint8_t), void (*tx_c
 static ADC_CLOCK_SETUP_T adc_setup;
 
 void Board_ADC_Init() {
-	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_11, FUNC2);
-	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_0, FUNC2);
+	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_11, IOCON_FUNC2|IOCON_ADMODE_EN|(!IOCON_HYS_EN)|IOCON_MODE_INACT);
+	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_0, IOCON_FUNC2|IOCON_ADMODE_EN|(!IOCON_HYS_EN)|IOCON_MODE_INACT);
     Chip_ADC_Init(LPC_ADC, &adc_setup);
     Chip_ADC_EnableChannel(LPC_ADC, ADC_CH0, ENABLE);
     Chip_ADC_EnableChannel(LPC_ADC, ADC_CH1, ENABLE);
