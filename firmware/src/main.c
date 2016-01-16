@@ -35,9 +35,11 @@ static char uart_rx_buf[UART_RX_BUFFER_SIZE];
 #ifdef DEBUG_ENABLE
 	#define DEBUG_Print(str) Chip_UART_SendBlocking(LPC_USART, str, strlen(str))
 	#define DEBUG_Write(str, count) Chip_UART_SendBlocking(LPC_USART, str, count)
+	#define DEBUG_LED_Indicator() (tps_1_data > 0x0200) ? LED_On() : LED_Off()
 #else
 	#define DEBUG_Print(str)
 	#define DEBUG_Write(str, count) 
+	#define DEBUG_LED_Indicator()
 #endif
 
 /*****************************************************************************
@@ -269,12 +271,14 @@ int main(void)
         Chip_ADC_ReadValue(LPC_ADC, ADC_CH0, &tps_1_data);
     	*/
 		itoa(tps_data,tx_buffer_str,10);
-
+		/*
                 if (tps_1_data > 0x0200) {
                         LED_On();
                 } else {
                         LED_Off();
                 }
+        */
+        DEBUG_LED_Indicator();
 		DEBUG_Print(tx_buffer_str);
 		DEBUG_Print("\r\n");
 
