@@ -1,4 +1,4 @@
-update=Saturday, January 09, 2016 'PMt' 02:34:06 PM
+update=Saturday, February 06, 2016 'PMt' 01:35:03 PM
 version=1
 last_client=kicad
 [pcbnew]
@@ -23,9 +23,11 @@ ModuleOutlineThickness=0.150000000000
 [cvpcb]
 version=1
 NetIExt=net
+[general]
+version=1
 [eeschema]
 version=1
-LibDir=../../EVT_KICAD_LIBS
+LibDir=../../EVT_KICAD_LIBS;../../EVT_KICAD_LIBS
 [eeschema/libraries]
 LibName1=power
 LibName2=device
@@ -63,5 +65,3 @@ LibName33=MITEVT_mcontrollers
 LibName34=MITEVT_OPTO
 LibName35=MITEVT_power
 LibName36=MITEVT_REG
-[general]
-version=1

@@ -131,11 +131,12 @@ void Board_ADC_Init() {
 	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_11, IOCON_FUNC2|IOCON_ADMODE_EN|(!IOCON_HYS_EN)|IOCON_MODE_INACT);
 	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_0, IOCON_FUNC2|IOCON_ADMODE_EN|(!IOCON_HYS_EN)|IOCON_MODE_INACT);
     Chip_ADC_Init(LPC_ADC, &adc_setup);
-    Chip_ADC_EnableChannel(LPC_ADC, ADC_CH0, ENABLE);
-    Chip_ADC_EnableChannel(LPC_ADC, ADC_CH1, ENABLE);
 }
 
 uint16_t Board_TPS_1_ADC_Read(uint16_t *adc_data) {
+	/* Enable this channel and disable all others (because burst mode not enabled) */
+	Chip_ADC_EnableChannel(LPC_ADC, ADC_CH1, DISABLE);
+	Chip_ADC_EnableChannel(LPC_ADC, ADC_CH0, ENABLE);
 	/* Start A/D conversion */
     Chip_ADC_SetStartMode(LPC_ADC, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
 
@@ -146,6 +147,9 @@ uint16_t Board_TPS_1_ADC_Read(uint16_t *adc_data) {
 }
 
 uint16_t Board_TPS_2_ADC_Read(uint16_t *adc_data) {
+	/* Enable this channel and disable all others (because burst mode not enabled) */
+	Chip_ADC_EnableChannel(LPC_ADC, ADC_CH0, DISABLE);
+	Chip_ADC_EnableChannel(LPC_ADC, ADC_CH1, ENABLE);
 	/* Start A/D conversion */
     Chip_ADC_SetStartMode(LPC_ADC, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
 

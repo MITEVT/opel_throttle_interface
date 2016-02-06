@@ -1,3 +1,2 @@
 (fp_lib_table
-  (lib (name MITEVT_AUTOMOTIVECON)(type KiCad)(uri "$(EVT)/MITEVT_AUTOMOTIVECON.pretty")(options "")(descr ""))
 )
