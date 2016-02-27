@@ -116,9 +116,7 @@ $EndSheet
 Wire Wire Line
 	6450 2150 6050 2150
 Wire Wire Line
-	4300 2150 4700 2150
-Wire Wire Line
-	4700 2150 4850 2150
+	4300 2150 4850 2150
 Wire Wire Line
 	4300 2000 4300 2150
 Wire Wire Line
@@ -222,9 +220,7 @@ Connection ~ 4700 2150
 Wire Wire Line
 	6800 1450 4700 1450
 Wire Wire Line
-	6800 1450 6800 3050
-Wire Wire Line
-	6800 3050 6800 4900
+	6800 1450 6800 4900
 Wire Wire Line
 	6800 3050 7400 3050
 Wire Wire Line
@@ -272,9 +268,7 @@ $EndComp
 Wire Wire Line
 	3950 2850 3600 2850
 Wire Wire Line
-	3950 2400 3950 2600
-Wire Wire Line
-	3950 2600 3950 2850
+	3950 2400 3950 2850
 Connection ~ 3950 2600
 Wire Wire Line
 	3950 2600 4850 2600
