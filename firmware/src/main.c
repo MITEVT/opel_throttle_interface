@@ -1,5 +1,3 @@
-
-
 #include "board.h"
 
 /*****************************************************************************
@@ -9,7 +7,7 @@
 #define TEST_CCAN_BAUD_RATE 500000
 
 #define LED_PORT 2
-#define LED_PIN 10
+#define LED_PIN 5
 
 #define BUFFER_SIZE 8
 #define UART_RX_BUFFER_SIZE 8
@@ -104,20 +102,23 @@ int main(void)
 		while(1);
 	}
 
-	Board_LEDs_Init();
+//	Board_LEDs_Init();
+	GPIO_Config();
+	LED_Config();
+//	LED_On();
 	Board_ADC_Init();
 
-    uint16_t tps_1_data = 0;
-    uint16_t tps_2_data = 0;
-    int16_t tps_error = 0;
-    uint16_t tps_data = 0;
+    	uint16_t tps_1_data = 0;
+    	uint16_t tps_2_data = 0;
+    	int16_t tps_error = 0;
+    	uint16_t tps_data = 0;
 
 	//---------------
 	//UART
-    Board_UART_Init(9600);
+    	Board_UART_Init(9600);
 
 	//---------------
-
+	
 	DEBUG_Print("Started up\n\r");
 
 	//---------------
@@ -131,18 +132,16 @@ int main(void)
 	Board_CAN_Init(TEST_CCAN_BAUD_RATE, CAN_rx, CAN_tx, CAN_error);
 	
 	/*
-	MESSAGE_NAME=TI_PACKET ID=0x800 FREQ=100HZ
+	MESSAGE_NAME=TI_PACKET ID=0x301 FREQ=100HZ
     DATA_NAME=ACC_VAL POSITION=0:7
         0x00-0xFF ACC_VAL
     DATA_NAME=BRAKE_VAL POSITION=8:15
         0x00-0xFF BRAKE_VAL
-    DATA_NAME=REGEN_VAL POSITION=16:23
-        0x00-0xFF REGEN_VAL
-     DATA_NAME=FLAGS POSITION=23:31
+    DATA_NAME=FLAGS POSITION=16:23
         0x00-0xFF FLAGS
 	*/
 
-	/* Configure message object 1 to only ID 0x800 */
+	/* Configure message object 1 to only ID 0x301 */
 	msg_obj.msgobj = 1;
 	msg_obj.mode_id = 0x301;
 	msg_obj.mask = 0x7FF;
@@ -151,6 +150,8 @@ int main(void)
 	
 	can_error_flag = false;
 	can_error_info = 0;
+	
+	bool send = false;
 
 	while (1) {
 
@@ -162,15 +163,39 @@ int main(void)
 
 		bool tps_bad_reading = abs(tps_error) > 92;
 		
-		DEBUG_LED_Indicator(tps_error);
-		itoa(tps_data,tx_buffer_str,10);
-		DEBUG_Print("TPS_DATA:");
-		DEBUG_Print(tx_buffer_str);
-		DEBUG_Print("\t");
-		DEBUG_Print("TPS_ERROR:");
-		itoa(abs(tps_error),tx_buffer_str,10);
-		DEBUG_Print(tx_buffer_str);
-		DEBUG_Print("\r\n");
+		if (tps_bad_reading) {
+			LED_On();
+		}
+//		itoa(tps_1_data,tx_buffer_str,10);
+//		DEBUG_Print(tx_buffer_str);
+//		DEBUG_Print("\r\n");
+//		itoa(tps_2_data,tx_buffer_str,10);
+//		DEBUG_Print(tx_buffer_str);
+//		DEBUG_Print("\r\n");
+
+//		DEBUG_LED_Indicator(tps_error);
+//		itoa(tps_data,tx_buffer_str,10);
+//		DEBUG_Print("TPS_DATA:");
+//		DEBUG_Print(tx_buffer_str);
+//		DEBUG_Print("\t");
+//		DEBUG_Print("TPS_ERROR:");
+//		itoa(abs(tps_error),tx_buffer_str,10);
+//		DEBUG_Print(tx_buffer_str);
+//		DEBUG_Print("\r\n");
+
+		if (send) {
+			DEBUG_Print("Sending CAN with ID: 0x301\r\n");
+			msg_obj.msgobj = 2;
+			msg_obj.mode_id = 0x301;
+			msg_obj.dlc = 4;
+			msg_obj.data[0] =  (uint8_t) (tps_data & 0x00FF);  
+			msg_obj.data[1] = (uint8_t) ((tps_data)>>8); //divide by 2^8
+			msg_obj.data[2] = (uint8_t) ((tps_bad_reading) ? 1 : 0);
+			LPC_CCAN_API->can_transmit(&msg_obj);
+			Board_UART_PrintNum(msg_obj.data[0], 10, true);
+			Board_UART_PrintNum(msg_obj.data[1], 10, true);
+			Board_UART_PrintNum(msg_obj.data[2], 10, true);		
+		}
 
 		if (!RingBuffer_IsEmpty(&rx_buffer)) {
 			CCAN_MSG_OBJ_T temp_msg;
@@ -193,8 +218,9 @@ int main(void)
 		if ((count = Chip_UART_Read(LPC_USART, uart_rx_buf, UART_RX_BUFFER_SIZE)) != 0) {
 			switch (uart_rx_buf[0]) {
 				case 'a':
-					DEBUG_Print("Sending CAN with ID: 0x600\r\n");
+					DEBUG_Print("Sending CAN with ID: 0x301\r\n");
 					msg_obj.msgobj = 2;
+					msg_obj.mode_id = 0x301;
 					msg_obj.dlc = 1;
 					msg_obj.data[0] = 0xAA;
 					LPC_CCAN_API->can_transmit(&msg_obj);
@@ -204,14 +230,58 @@ int main(void)
 					msg_obj.msgobj = 2;
 					msg_obj.mode_id = 0x301;
 					msg_obj.dlc = 4;
-					msg_obj.data[0] = (uint8_t) (tps_data & 0x00FF);
-					msg_obj.data[1] = (uint8_t) ((tps_data)>>8);
+					msg_obj.data[0] = (uint8_t) (tps_data & 0x00FF); 
+					msg_obj.data[1] = (uint8_t) ((tps_data)>>8); //divide by 2^8
 					msg_obj.data[2] = (uint8_t) ((tps_bad_reading) ? 1 : 0);
 					LPC_CCAN_API->can_transmit(&msg_obj);
 					Board_UART_PrintNum(msg_obj.data[0], 10, true);
 					Board_UART_PrintNum(msg_obj.data[1], 10, true);
 					Board_UART_PrintNum(msg_obj.data[2], 10, true);
 					break;
+				case 'c':
+					DEBUG_Print("Sending CAN with ID: 0x301\r\n");
+					msg_obj.msgobj = 2;
+					msg_obj.mode_id = 0x301;
+					msg_obj.dlc = 3;
+					msg_obj.data[0] = 0x05;
+					msg_obj.data[1] = 0x00;
+					msg_obj.data[2] = 0x00;
+					LPC_CCAN_API->can_transmit(&msg_obj);
+					Board_UART_PrintNum(msg_obj.data[0],10,true);
+					Board_UART_PrintNum(msg_obj.data[1],10,true);
+					Board_UART_PrintNum(msg_obj.data[2],10,true);
+					break;
+				case 'b':
+					DEBUG_Print("Sending CAN with ID: 0x301\r\n");
+					msg_obj.msgobj = 2;
+					msg_obj.mode_id = 0x301;
+					msg_obj.dlc = 3;
+					msg_obj.data[0] = 0x00;
+					msg_obj.data[1] = 0x05;
+					msg_obj.data[2] = 0x00;
+					LPC_CCAN_API->can_transmit(&msg_obj);
+					Board_UART_PrintNum(msg_obj.data[0],10,true);
+					Board_UART_PrintNum(msg_obj.data[1],10,true);
+					Board_UART_PrintNum(msg_obj.data[2],10,true);
+					break;
+				case 'e':
+					DEBUG_Print("Sending CAN with ID: 0x301\r\n");
+					msg_obj.msgobj = 2;
+					msg_obj.mode_id = 0x301;
+					msg_obj.dlc = 3;
+					msg_obj.data[0] = 0x04;
+					msg_obj.data[1] = 0x10;
+					msg_obj.data[2] = 0x01;
+					LPC_CCAN_API->can_transmit(&msg_obj);
+					Board_UART_PrintNum(msg_obj.data[0],10,true);
+					Board_UART_PrintNum(msg_obj.data[1],10,true);
+					Board_UART_PrintNum(msg_obj.data[2],10,true);
+					break;
+				case 't':
+					send = true;
+					break;
+				case 'f':
+					send = false;
 				default:
 					DEBUG_Print("Invalid Command\r\n");
 					break;
