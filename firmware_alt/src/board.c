@@ -1,6 +1,5 @@
 #include "board.h"
 
-
 // -------------------------------------------------------------
 // Board ISRs
 
@@ -25,7 +24,7 @@ const uint32_t OscRateIn = 0;
 
 int8_t Board_SysTick_Init(void) {
 	msTicks = 0;
-
+	
 	// Update the value of SystemCoreClock to the clock speed in hz
 	SystemCoreClockUpdate();
 
@@ -39,8 +38,8 @@ void Board_LEDs_Init(void) {
 }
 
 void Board_UART_Init(uint32_t baudrate) {
-	Chip_IOCON_PinMuxSet(LPC_IOCON, UART_RX_IOCON, (IOCON_FUNC1 | IOCON_MODE_INACT));	// Rx pin
-	Chip_IOCON_PinMuxSet(LPC_IOCON, UART_TX_IOCON, (IOCON_FUNC1 | IOCON_MODE_INACT));	// Tx Pin
+	Chip_IOCON_PinMuxSet(LPC_IOCON, UART_RX_IOCON, (IOCON_FUNC1 | IOCON_MODE_INACT));	//Rx pin
+	Chip_IOCON_PinMuxSet(LPC_IOCON, UART_TX_IOCON, (IOCON_FUNC1 | IOCON_MODE_INACT));	//Tx Pin
 
 	Chip_UART_Init(LPC_USART);
 	Chip_UART_SetBaud(LPC_USART, baudrate);
@@ -73,8 +72,7 @@ int8_t Board_UART_Read(void *data, uint8_t num_bytes) {
 	return Chip_UART_Read(LPC_USART, data, num_bytes);
 }
 
-void CAN_baudrate_calculate(uint32_t baud_rate, uint32_t *can_api_timing_cfg)
-{
+void CAN_baudrate_calculate(uint32_t baud_rate, uint32_t *can_api_timing_cfg) {
 	uint32_t pClk, div, quanta, segs, seg1, seg2, clk_per_bit, can_sjw;
 	Chip_Clock_EnablePeriphClock(SYSCTL_CLOCK_CAN);
 	pClk = Chip_Clock_GetMainClockRate();
@@ -86,12 +84,11 @@ void CAN_baudrate_calculate(uint32_t baud_rate, uint32_t *can_api_timing_cfg)
 			for (segs = 3; segs <= 17; segs++) {
 				if (clk_per_bit == (segs * quanta * (div + 1))) {
 					segs -= 3;
-					seg1 = segs / 2;
+					seg1 = segs/2;
 					seg2 = segs - seg1;
 					can_sjw = seg1 > 3 ? 3 : seg1;
 					can_api_timing_cfg[0] = div;
-					can_api_timing_cfg[1] =
-						((quanta - 1) & 0x3F) | (can_sjw & 0x03) << 6 | (seg1 & 0x0F) << 8 | (seg2 & 0x07) << 12;
+					can_api_timing_cfg[1] = ((quanta - 1) & 0x3F) | (can_sjw & 0x03) << 6 | (seg1 & 0x0F) << 8 | (seg2 & 0x07) << 12;
 					return;
 				}
 			}
@@ -102,7 +99,7 @@ void CAN_baudrate_calculate(uint32_t baud_rate, uint32_t *can_api_timing_cfg)
 void Board_CAN_Init(uint32_t baudrate, void (*rx_callback)(uint8_t), void (*tx_callback)(uint8_t), void (*error_callback)(uint32_t)) {
 
 	uint32_t can_api_timing_cfg[2];
-	
+
 	CCAN_CALLBACKS_T callbacks = {
 		rx_callback,
 		tx_callback,
@@ -128,33 +125,16 @@ void Board_CAN_Init(uint32_t baudrate, void (*rx_callback)(uint8_t), void (*tx_c
 static ADC_CLOCK_SETUP_T adc_setup;
 
 void Board_ADC_Init() {
-	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_11, IOCON_FUNC2|IOCON_ADMODE_EN|(!IOCON_HYS_EN)|IOCON_MODE_INACT);
-	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_0, IOCON_FUNC2|IOCON_ADMODE_EN|(!IOCON_HYS_EN)|IOCON_MODE_INACT);
-    Chip_ADC_Init(LPC_ADC, &adc_setup);
+	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_3, IOCON_FUNC2|IOCON_ADMODE_EN|(!IOCON_HYS_EN)|IOCON_MODE_INACT);
+	Chip_ADC_Init(LPC_ADC, &adc_setup);
 }
 
-uint16_t Board_TPS_1_ADC_Read(uint16_t *adc_data) {
-	/* Enable this channel and disable all others (because burst mode not enabled) */
-	Chip_ADC_EnableChannel(LPC_ADC, ADC_CH1, DISABLE);
-	Chip_ADC_EnableChannel(LPC_ADC, ADC_CH0, ENABLE);
-	/* Start A/D conversion */
+uint16_t Board_TPS_ADC_Read(uint16_t *adc_data) {
+	Chip_ADC_EnableChannel(LPC_ADC, ADC_CH4, ENABLE);
 	Chip_ADC_SetStartMode(LPC_ADC, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
 
-    /* Waiting for A/D conversion complete */
-	while (!Chip_ADC_ReadStatus(LPC_ADC, ADC_CH0, ADC_DR_DONE_STAT)) {}
-    /* Read ADC value */
-	Chip_ADC_ReadValue(LPC_ADC, ADC_CH0, adc_data);
+	while (!Chip_ADC_ReadStatus(LPC_ADC, ADC_CH4, ADC_DR_DONE_STAT)) {}
+	Chip_ADC_ReadValue(LPC_ADC, ADC_CH4, adc_data);
 }
 
-uint16_t Board_TPS_2_ADC_Read(uint16_t *adc_data) {
-	/* Enable this channel and disable all others (because burst mode not enabled) */
-	Chip_ADC_EnableChannel(LPC_ADC, ADC_CH0, DISABLE);
-	Chip_ADC_EnableChannel(LPC_ADC, ADC_CH1, ENABLE);
-	/* Start A/D conversion */
-	Chip_ADC_SetStartMode(LPC_ADC, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
 
-    /* Waiting for A/D conversion complete */
-	while (!Chip_ADC_ReadStatus(LPC_ADC, ADC_CH1, ADC_DR_DONE_STAT)) {}
-    /* Read ADC value */
-	Chip_ADC_ReadValue(LPC_ADC, ADC_CH1, adc_data);
-}
