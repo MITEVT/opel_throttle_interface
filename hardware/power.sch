@@ -35,7 +35,6 @@ LIBS:MITEVT_mcontrollers
 LIBS:MITEVT_OPTO
 LIBS:MITEVT_power
 LIBS:MITEVT_REG
-LIBS:final_outline-cache
 EELAYER 25 0
 EELAYER END
 $Descr A4 11693 8268
@@ -72,8 +71,6 @@ F 3 "" H 5350 3700 60  0000 C CNN
 	1    5350 3700
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	5350 3500 5350 3700
 NoConn ~ 5900 3100
 Wire Wire Line
 	2900 2900 4850 2900
@@ -334,4 +331,6 @@ Wire Wire Line
 	2700 2050 2700 2200
 Connection ~ 2950 1450
 Connection ~ 2700 1450
+Wire Wire Line
+	5350 3700 5350 3500
 $EndSCHEMATC
