@@ -9,6 +9,13 @@
 #define BUFFER_SIZE 8
 #define UART_RX_BUFFER_SIZE 8
 
+// ---------------------------------------------------------
+// Static Variableb Declaration
+
+extern volatile uint32_t msTicks;
+
+static uint32_t lastMsg;
+
 uint16_t tx_buffer_str[16];
 
 CCAN_MSG_OBJ_T msg_obj;
@@ -70,6 +77,7 @@ int main(void) {
 	Board_LEDs_Init();
 	Board_LED_On(LED0);
 	Board_ADC_Init();
+	lastMsg = msTicks;
 
 	uint16_t tps_data = 0;
 	int16_t tps_error = 0;
@@ -118,7 +126,8 @@ int main(void) {
 			DEBUG_Print("\r\n");
 		}
 		
-		if (send) {
+		if (send && lastMsg < msTicks-10) {
+			lastMsg = msTicks;
 			DEBUG_Print("Sending CAN with ID: 0x301\r\n");
 			msg_obj.msgobj = 2;
 			msg_obj.mode_id = 0x301;
